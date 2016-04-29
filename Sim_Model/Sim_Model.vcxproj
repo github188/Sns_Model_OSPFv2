@@ -88,19 +88,24 @@
     <ClInclude Include="..\..\..\..\..\Core_lib\include\Sns_Config_Input.h" />
     <ClInclude Include="..\..\..\..\..\Core_lib\include\Sns_Message.h" />
     <ClInclude Include="..\..\..\..\..\Core_lib\include\types.h" />
+    <ClInclude Include="Ospfv2Header.h" />
+    <ClInclude Include="Ospfv2LSA.h" />
     <ClInclude Include="Sim_Test.h" />
     <ClInclude Include="Sns_Node.h" />
     <ClInclude Include="Sns_Scenarios.h" />
-   <ClInclude Include="..\..\..\Model_list\Sns_Model_OSPFv2.h" />
-   <ClInclude Include="StdAfx.h" />
+    <ClInclude Include="..\..\..\Model_list\Sns_Model_OSPFv2.h" />
+    <ClInclude Include="StdAfx.h" />
+    <ClInclude Include="Utilities.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Ospfv2Header.cpp" />
+    <ClCompile Include="Ospfv2LSA.cpp" />
     <ClCompile Include="Sim_Model.cpp" />
     <ClCompile Include="Sim_Test.cpp" />
     <ClCompile Include="Sns_Node.cpp" />
     <ClCompile Include="Sns_Scenarios.cpp" />
     <ClCompile Include="..\..\..\Model_list\Sns_Model_OSPFv2.cpp" />
-   <ClCompile Include="StdAfx.cpp" />
+    <ClCompile Include="StdAfx.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -27,16 +27,28 @@
     <ClInclude Include="Sns_Scenarios.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Core_lib\include\clock.h">
+    <ClInclude Include="..\..\..\..\..\Core_lib\include\clock.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Core_lib\include\Sns_Config_Input.h">
+    <ClInclude Include="..\..\..\..\..\Core_lib\include\Sns_Config_Input.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Core_lib\include\Sns_Message.h">
+    <ClInclude Include="..\..\..\..\..\Core_lib\include\Sns_Message.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Core_lib\include\types.h">
+    <ClInclude Include="..\..\..\..\..\Core_lib\include\types.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Model_list\Sns_Model_OSPFv2.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Ospfv2Header.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Utilities.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Ospfv2LSA.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -54,6 +66,15 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Sns_Scenarios.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Model_list\Sns_Model_OSPFv2.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Ospfv2Header.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Ospfv2LSA.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
