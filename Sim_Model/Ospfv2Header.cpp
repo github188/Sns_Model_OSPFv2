@@ -7,8 +7,8 @@ OSPFv2CommonHeader::OSPFv2CommonHeader()
 	: version(2)
 	, type(0)
 	, packetLength(0)
-	, routerID(0xffffffff)
-	, areaID(0xffffffff)
+	, routerID(0xFFFFFFFF)
+	, areaID(0xFFFFFFFF)
 	, checkSum(0)
 	, auType(0)
 	, authentication(0)
@@ -159,13 +159,13 @@ std::ostream& operator<< (std::ostream& os, const OSPFv2CommonHeader& header)
 /************************************************************************/
 
 OSPFv2HelloPacket::OSPFv2HelloPacket()
-	: networkMask(0xffffffff)
+	: networkMask(IPv4Address::GetOnes())
 	, helloInterval(0)
 	, options(0x00)
 	, routerPriority(0)
 	, routerDeadInterval(0)
-	, designatedRouter(0xffffffff)
-	, backupDesignatedRouter(0xffffffff)
+	, designatedRouter(0xFFFFFFFF)
+	, backupDesignatedRouter(0xFFFFFFFF)
 {
 
 }
@@ -177,13 +177,13 @@ void OSPFv2HelloPacket::setNetworkMask(const IPv4Mask& networkmask)
 {
 	this->networkMask=networkmask;
 }
-UInt16 OSPFv2HelloPacket::getHelloInterval() const
+clocktype OSPFv2HelloPacket::getHelloInterval() const
 {
-	return helloInterval;
+	return static_cast<clocktype>(helloInterval);
 }
-void OSPFv2HelloPacket::setHelloInterval(UInt16 helloInterval)
+void OSPFv2HelloPacket::setHelloInterval(clocktype helloInterval)
 {
-	this->helloInterval=helloInterval;
+	this->helloInterval=static_cast<UInt16>(helloInterval);
 }
 OSPFv2OptionsField OSPFv2HelloPacket::getOptions(OSPFv2OptionsField option) const
 {
@@ -197,13 +197,13 @@ UInt8 OSPFv2HelloPacket::getRouterPriority() const
 {
 	return routerPriority;
 }
-UInt32 OSPFv2HelloPacket::getRouterDeadInterval() const
+clocktype OSPFv2HelloPacket::getRouterDeadInterval() const
 {
-	return routerDeadInterval;
+	return static_cast<clocktype>(helloInterval);
 }
-void OSPFv2HelloPacket::setRouterDeadInterval(UInt32 routerDeadInterval)
+void OSPFv2HelloPacket::setRouterDeadInterval(clocktype routerDeadInterval)
 {
-	this->routerDeadInterval=routerDeadInterval;
+	this->routerDeadInterval=static_cast<UInt32>(helloInterval);
 }
 UInt32 OSPFv2HelloPacket::getDesignateRouter() const
 {
@@ -412,8 +412,8 @@ std::ostream& operator<< (std::ostream& os, const OSPFv2DDPacket& packet)
 //LSR Info
 OSPFv2LSRequest::OSPFv2LSRequest()
 	: LSType(0)
-	, linkStateID(0xffffffff)
-	, advertisingRouter(0xffffffff)
+	, linkStateID(0xFFFFFFFF)
+	, advertisingRouter(0xFFFFFFFF)
 {
 
 }

@@ -5,8 +5,8 @@ OSPFv2LSAHeader::OSPFv2LSAHeader()
 	: LSAge(0xffff)
 	, options(0x00)
 	, LSType(0)
-	, linkStateID(0xffffffff)
-	, advertisingRouter(0xffffffff)
+	, linkStateID(0xFFFFFFFF)
+	, advertisingRouter(0xFFFFFFFF)
 	, LSSequenceNumber(0)
 	, LSCheckSum(0)
 	, length(0)
@@ -193,8 +193,8 @@ std::ostream& operator<< (std::ostream& os, const OSPFv2LSA& LSA)
 /************************************************************************/
 //Router Link
 OSPFv2RouterLink::OSPFv2RouterLink()
-	: linkID(0xffffffff)
-	, linkData(0xffffffff)
+	: linkID(0xFFFFFFFF)
+	, linkData(0xFFFFFFFF)
 	, type(0)
 	, nTOS(0)
 	, metric(0)
@@ -310,7 +310,7 @@ void OSPFv2RouterLSA::addRouterLink(const OSPFv2RouterLink& routerLink)
 {
 	routerLinks.push_back(routerLink);
 }
-void OSPFv2RouterLSA::getMetaData(UInt8* series)
+void OSPFv2RouterLSA::getMetaData(UInt8* series) const
 {
 	MetaData* metaData=reinterpret_cast<MetaData*>(series);
 	header.getMetaData(metaData->headerMetaData);
@@ -324,12 +324,10 @@ void OSPFv2RouterLSA::getMetaData(UInt8* series)
 		i->getMetaData(*RouterLink);
 	}
 }
-void OSPFv2RouterLSA::set(const UInt8* series, UInt32 seriesSize)
+const UInt8* OSPFv2RouterLSA::set(const UInt8* series)
 {
-	const UInt32 nRouterLinks=(seriesSize-sizeof(MetaData))/sizeof(OSPFv2RouterLink::MetaData);
-	assert(nRouterLinks>=0,"Series' size is wrong.");
 	const MetaData* metaData = reinterpret_cast<const MetaData*>(series);
-	assert(nRouterLinks==metaData->nLinks,"nLinks is wrong.");
+	const UInt32 nRouterLinks=metaData->nLinks;
 	header.setHeader(metaData->headerMetaData);
 	options=metaData->options;
 
@@ -337,7 +335,9 @@ void OSPFv2RouterLSA::set(const UInt8* series, UInt32 seriesSize)
 	for (int i=0;i<nRouterLinks;i++)
 	{
 		routerLinks.push_back(OSPFv2RouterLink(*routerLink));
+		routerLink++;
 	}
+	return reinterpret_cast<const UInt8*>(routerLink);
 }
 std::ostream& operator<< (std::ostream& os, const OSPFv2RouterLSA& routerLSA)
 {

@@ -12,7 +12,7 @@ typedef IPv4Address IPv4Mask;
 class IPv4Address
 {
 public:
-	IPv4Address(UInt32 address=0xffffffff)
+	IPv4Address(UInt32 address=0xFFFFFFFF)
 		:m_address(address)
 	{
 
@@ -50,7 +50,7 @@ public:
 	}
 	static IPv4Address GetOnes()
 	{
-		return IPv4Address(0xffffffff);
+		return IPv4Address(0xFFFFFFFF);
 	}
 	static IPv4Address GetBroadcast(const IPv4Address& address, const IPv4Mask& mask);
 private:

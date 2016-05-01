@@ -51,6 +51,18 @@
     <ClInclude Include="Ospfv2LSA.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="OSPFv2Area.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="OSPFv2Interface.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="OSPFv2RoutingProtocol.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="OSPFv2RoutingTable.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Sim_Model.cpp">
@@ -75,6 +87,18 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Ospfv2LSA.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="OSPFv2Area.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="OSPFv2Interface.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="OSPFv2RoutingProtocol.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="OSPFv2RoutingTable.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

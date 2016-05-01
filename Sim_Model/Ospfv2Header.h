@@ -1,5 +1,6 @@
 #pragma once
 #include "StdAfx.h"
+#include "clock.h"
 #include "Utilities.h"
 #include "OSPFv2LSA.h"
 
@@ -59,7 +60,7 @@ protected:
 	UInt8 type;
 	UInt16 packetLength;
 	UInt32 routerID;
-	UInt32 areaID;//0xffffffff
+	UInt32 areaID;//0xFFFFFFFF
 	UInt16 checkSum;//not used
 	UInt16 auType;//not used
 	UInt64 authentication;//not used
@@ -86,13 +87,13 @@ public:
 
 	IPv4Mask getNetworkMask() const;
 	void setNetworkMask(const IPv4Mask& networkmask);
-	UInt16 getHelloInterval() const;
-	void setHelloInterval(UInt16 helloInterval);
+	clocktype getHelloInterval() const;
+	void setHelloInterval(clocktype helloInterval);
 	OSPFv2OptionsField getOptions(OSPFv2OptionsField option) const;//输入位名返回是否置位,可以用按位或连接多个Options位
 	void setOptions(OSPFv2OptionsField options);//可以用按位或连接多个Options位
 	UInt8 getRouterPriority() const;
-	UInt32 getRouterDeadInterval() const;
-	void setRouterDeadInterval(UInt32 routerDeadInterval);
+	clocktype getRouterDeadInterval() const;
+	void setRouterDeadInterval(clocktype routerDeadInterval);
 	UInt32 getDesignateRouter() const;
 	UInt32 getBackupDesignateRouter() const;
 	std::vector<UInt32> getNeighbors() const;
@@ -256,42 +257,41 @@ void OSPFv2LSUPacket<T>::addLSA(const T& LSA)
 {
 	LSAs.push_back(LSA);
 }
-template<class T>
-void OSPFv2LSUPacket<T>::serialize(UInt8* series) const
+template<>
+void OSPFv2LSUPacket<OSPFv2RouterLSA>::serialize(UInt8* series) const
 {
 	MetaData* metaData = reinterpret_cast<MetaData*>(series);
 	metaData->nLSAs=getNLSAs();
 
-	T::MetaData* LSAMetaData=reinterpret_cast<T::MetaData*>(metaData+1);
-	for (std::vector<T>::const_iterator i=LSAs.begin();
+	OSPFv2RouterLSA::MetaData* LSAMetaData=reinterpret_cast<OSPFv2RouterLSA::MetaData*>(metaData+1);
+	for (std::vector<OSPFv2RouterLSA>::const_iterator i=LSAs.begin();
 		i!=LSAs.end();
 		i++)
 	{
-		i->getMetaData(*LSAMetaData);
+		i->getMetaData(reinterpret_cast<UInt8*>(LSAMetaData));
 		LSAMetaData++;
 	}
 }
-template<class T>
-void OSPFv2LSUPacket<T>::deserialize(const UInt8* series, UInt32 seriesSize)
+template<>
+void OSPFv2LSUPacket<OSPFv2RouterLSA>::deserialize(const UInt8* series, UInt32 seriesSize)
 {
-	UInt32 nLSAs=(seriesSize-sizeof(MetaData))/sizeof(T::MetaData);
+	UInt32 nLSAs=(seriesSize-sizeof(MetaData))/sizeof(OSPFv2RouterLSA::MetaData);
 	assert(nLSAs>=0,"Series' size is wrong.");
 	const MetaData* metaData = reinterpret_cast<const MetaData*>(series);
 	assert(nLSAs==metaData->nLSAs,"nLSAs is wrong.");
 
-	const T::MetaData* LSAMetaData=reinterpret_cast<const T::MetaData*>(metaData+1);
+	const OSPFv2RouterLSA::MetaData* LSAMetaData=reinterpret_cast<const OSPFv2RouterLSA::MetaData*>(metaData+1);
 	for (int i=0;i<nLSAs;i++)
 	{
-		T LSA;
-		LSA.set(LSAMetaData);
+		OSPFv2RouterLSA LSA;
+		LSAMetaData=reinterpret_cast<const OSPFv2RouterLSA::MetaData*>(LSA.set(reinterpret_cast<const UInt8*>(LSAMetaData)));
 		LSAs.push_back(LSA);
-		LSAMetaData++;
 	}
 }
-template<class T>
-UInt32 OSPFv2LSUPacket<T>::getSerializedSize() const
+template<>
+UInt32 OSPFv2LSUPacket<OSPFv2RouterLSA>::getSerializedSize() const
 {
-	return sizeof(MetaData)+sizeof(T::MetaData)*getNLSAs();
+	return sizeof(MetaData)+sizeof(OSPFv2RouterLSA::MetaData)*getNLSAs();
 }
 
 template<class T>

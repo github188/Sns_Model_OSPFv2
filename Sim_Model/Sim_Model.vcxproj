@@ -88,8 +88,12 @@
     <ClInclude Include="..\..\..\..\..\Core_lib\include\Sns_Config_Input.h" />
     <ClInclude Include="..\..\..\..\..\Core_lib\include\Sns_Message.h" />
     <ClInclude Include="..\..\..\..\..\Core_lib\include\types.h" />
+    <ClInclude Include="OSPFv2Area.h" />
     <ClInclude Include="Ospfv2Header.h" />
+    <ClInclude Include="OSPFv2Interface.h" />
     <ClInclude Include="Ospfv2LSA.h" />
+    <ClInclude Include="OSPFv2RoutingProtocol.h" />
+    <ClInclude Include="OSPFv2RoutingTable.h" />
     <ClInclude Include="Sim_Test.h" />
     <ClInclude Include="Sns_Node.h" />
     <ClInclude Include="Sns_Scenarios.h" />
@@ -98,8 +102,12 @@
     <ClInclude Include="Utilities.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="OSPFv2Area.cpp" />
     <ClCompile Include="Ospfv2Header.cpp" />
+    <ClCompile Include="OSPFv2Interface.cpp" />
     <ClCompile Include="Ospfv2LSA.cpp" />
+    <ClCompile Include="OSPFv2RoutingProtocol.cpp" />
+    <ClCompile Include="OSPFv2RoutingTable.cpp" />
     <ClCompile Include="Sim_Model.cpp" />
     <ClCompile Include="Sim_Test.cpp" />
     <ClCompile Include="Sns_Node.cpp" />

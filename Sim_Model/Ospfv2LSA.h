@@ -167,8 +167,8 @@ public:
 	std::vector<OSPFv2RouterLink> getRouterLinks() const;
 	void addRouterLink(const OSPFv2RouterLink& routerLink);
 
-	void getMetaData(UInt8* series);
-	void set(const UInt8* series, UInt32 seriesSize);
+	void getMetaData(UInt8* series) const;
+	const UInt8* set(const UInt8* series);
 private:
 	UInt16 options;
 	std::vector<OSPFv2RouterLink> routerLinks;
