@@ -1,14 +1,14 @@
 #include <malloc.h>
-#include "Ospfv2Header.h"
+#include "OSPFv2Header.h"
 /************************************************************************/
-/* Ospfv2Header                                                                     */
+/* OSPFv2Header                                                                     */
 /************************************************************************/
-Ospfv2Header::Ospfv2Header()
+OSPFv2CommonHeader::OSPFv2CommonHeader()
 	: version(2)
 	, type(0)
 	, packetLength(0)
-	, routerId(0xffffffff)
-	, areaId(0xffffffff)
+	, routerID(0xffffffff)
+	, areaID(0xffffffff)
 	, checkSum(0)
 	, auType(0)
 	, authentication(0)
@@ -16,13 +16,13 @@ Ospfv2Header::Ospfv2Header()
 
 }
 
-Ospfv2Header::Ospfv2Header(Ospfv2PacketType type, const uint16_t packetLength, 
-	const uint32_t routerId, const uint32_t areaId)
+OSPFv2CommonHeader::OSPFv2CommonHeader(OSPFv2PacketType type, UInt16 packetLength, 
+	UInt32 routerID, UInt32 areaID)
 	: version(2)
-	, type(static_cast<uint8_t>(type))
+	, type(static_cast<UInt8>(type))
 	, packetLength(packetLength)
-	, routerId(routerId)
-	, areaId(areaId)
+	, routerID(routerID)
+	, areaID(areaID)
 	, checkSum(0)
 	, auType(0)
 	, authentication(0)
@@ -30,84 +30,134 @@ Ospfv2Header::Ospfv2Header(Ospfv2PacketType type, const uint16_t packetLength,
 
 }
 
-Ospfv2Header::~Ospfv2Header()
+OSPFv2CommonHeader::~OSPFv2CommonHeader()
 {
 
 }
 
-uint8_t Ospfv2Header::getVersion() const
+UInt8 OSPFv2CommonHeader::getVersion() const
 {
 	return version;
 }
 
-Ospfv2PacketType Ospfv2Header::getType() const
+OSPFv2PacketType OSPFv2CommonHeader::getType() const
 {
-	return static_cast<Ospfv2PacketType>(type);
+	return static_cast<OSPFv2PacketType>(type);
 }
 
-void Ospfv2Header::setType(Ospfv2PacketType type)
+void OSPFv2CommonHeader::setType(OSPFv2PacketType type)
 {
-	this->type=static_cast<uint8_t>(type);
+	this->type=static_cast<UInt8>(type);
 }
 
-uint16_t Ospfv2Header::getPacketLength() const
+UInt16 OSPFv2CommonHeader::getPacketLength() const
 {
 	return packetLength;
 }
 
-void Ospfv2Header::setPacketLength(const uint16_t packetLength)
+void OSPFv2CommonHeader::setPacketLength(UInt16 packetLength)
 {
 	this->packetLength=packetLength;
 }
 
-uint32_t Ospfv2Header::getRouterId() const
+UInt32 OSPFv2CommonHeader::getRouterID() const
 {
-	return routerId
+	return routerID
 }
 
-void Ospfv2Header::setRouterId(const uint32_t routerId)
+void OSPFv2CommonHeader::setRouterID(UInt32 routerID)
 {
-	this->routerId=routerId;
+	this->routerID=routerID;
 }
 
-uint32_t Ospfv2Header::getAreaId() const
+UInt32 OSPFv2CommonHeader::getAreaID() const
 {
-	return areaId;
+	return areaID;
 }
 
-void Ospfv2Header::setAreaId(const uint32_t areaId)
+void OSPFv2CommonHeader::setAreaID(UInt32 areaID)
 {
-	this->areaId=areaId;
+	this->areaID=areaID;
 }
 
-uint16_t Ospfv2Header::getCheckSum() const
+UInt16 OSPFv2CommonHeader::getCheckSum() const
 {
 	return checkSum;
 }
 
-uint16_t Ospfv2Header::getAuType() const
+UInt16 OSPFv2CommonHeader::getAuType() const
 {
 	return auType;
 }
 
-uint64_t Ospfv2Header::getAuthentication() const
+UInt64 OSPFv2CommonHeader::getAuthentication() const
 {
 	return authentication;
 }
 
-void Ospfv2Header::setHeader(Ospfv2PacketType type, const uint16_t packetLength, 
-	const uint32_t routerId, const uint32_t areaId)
+void OSPFv2CommonHeader::serialize(UInt8* series) const
 {
-	this->type=static_cast<uint8_t>(type);
-	this->packetLength=packetLength;
-	this->routerId=routerId;
-	this->areaId=areaId;
+	MetaData* metaData = reinterpret_cast<MetaData*>(series);
+	metaData->version=version;
+	metaData->type=type;
+	metaData->packetLength=packetLength;
+	metaData->routerID=routerID;
+	metaData->areaID=areaID;
+	metaData->checkSum=checkSum;
+	metaData->auType=auType;
+	metaData->authentication=authentication;
+}
+void OSPFv2CommonHeader::deserialize(const UInt8* series, UInt32 seriesSize)
+{
+	assert(seriesSize==getSerializedSize(),"Series's size is wrong.");
+	const MetaData* metaData = reinterpret_cast<const MetaData*>(series);
+	version=metaData->version;
+	type=metaData->type;
+	packetLength=metaData->packetLength;
+	routerID=metaData->routerID;
+	areaID=metaData->areaID;
+	checkSum=metaData->checkSum;
+	auType=metaData->auType;
+	authentication=metaData->authentication;
+}
+UInt32 OSPFv2CommonHeader::getSerializedSize() const
+{
+	return sizeof(MetaData);
+}
+void OSPFv2CommonHeader::setHeader(OSPFv2PacketType type, UInt16 packetLength, 
+	UInt32 routerID, UInt32 areaID)
+{
+	setType(static_cast<OSPFv2PacketType>(type));
+	setPacketLength(packetLength);
+	setRouterID(routerID);
+	setAreaID(areaID);
+}
+
+void OSPFv2CommonHeader::setHeader(const OSPFv2CommonHeader& header)
+{
+	setType(static_cast<OSPFv2PacketType>(header.type));
+	setPacketLength(header.packetLength);
+	setRouterID(header.routerID);
+	setAreaID(header.areaID);
+}
+
+std::ostream& operator<< (std::ostream& os, const OSPFv2CommonHeader& header)
+{
+	os<<"Version: "<<header.getVersion()
+		<<" Type: "<<header.getType()
+		<<" Packet length: "<<header.getPacketLength()
+		<<" Router ID: "<<header.getRouterID()
+		<<" Area ID: "<<header.getAreaID()
+		<<" Check Sum: "<<header.getCheckSum()
+		<<" Au Type: "<<header.getAuType()
+		<<" Authentication: "<<header.getAuthentication();
+	return os;
 }
 /************************************************************************/
 /* Hello 报文                                                                     */
 /************************************************************************/
 
-Ospfv2HelloPacket::Ospfv2HelloPacket()
+OSPFv2HelloPacket::OSPFv2HelloPacket()
 	: networkMask(0xffffffff)
 	, helloInterval(0)
 	, options(0x00)
@@ -118,72 +168,110 @@ Ospfv2HelloPacket::Ospfv2HelloPacket()
 {
 
 }
-
-Ospfv2HelloPacket::~Ospfv2HelloPacket()
-{
-
-}
-
-uint32_t Ospfv2HelloPacket::getNetworkMask() const
+IPv4Mask OSPFv2HelloPacket::getNetworkMask() const
 {
 	return networkMask;
 }
-void Ospfv2HelloPacket::setNetworkMask(const uint32_t networkmask)
+void OSPFv2HelloPacket::setNetworkMask(const IPv4Mask& networkmask)
 {
 	this->networkMask=networkmask;
 }
-uint16_t Ospfv2HelloPacket::getHelloInterval() const
+UInt16 OSPFv2HelloPacket::getHelloInterval() const
 {
 	return helloInterval;
 }
-void Ospfv2HelloPacket::setHelloInterval(const uint16_t helloInterval)
+void OSPFv2HelloPacket::setHelloInterval(UInt16 helloInterval)
 {
 	this->helloInterval=helloInterval;
 }
-bool Ospfv2HelloPacket::getOptions(Ospfv2OptionsField option) const
+bool OSPFv2HelloPacket::getOptions(OSPFv2OptionsField option) const
 {
 	return option==(options&option);
 }
-void Ospfv2HelloPacket::setOptions(Ospfv2OptionsField options)
+void OSPFv2HelloPacket::setOptions(OSPFv2OptionsField options)
 {
 	this->options|=options;
 }
-uint8_t Ospfv2HelloPacket::getRouterPriority() const
+UInt8 OSPFv2HelloPacket::getRouterPriority() const
 {
 	return routerPriority;
 }
-uint32_t Ospfv2HelloPacket::getRouterDeadInterval() const
+UInt32 OSPFv2HelloPacket::getRouterDeadInterval() const
 {
 	return routerDeadInterval;
 }
-void Ospfv2HelloPacket::setRouterDeadInterval(const uint32_t routerDeadInterval)
+void OSPFv2HelloPacket::setRouterDeadInterval(UInt32 routerDeadInterval)
 {
 	this->routerDeadInterval=routerDeadInterval;
 }
-uint32_t Ospfv2HelloPacket::getDesignateRouter() const
+UInt32 OSPFv2HelloPacket::getDesignateRouter() const
 {
 	return designatedRouter;
 }
-uint32_t Ospfv2HelloPacket::getBackupDesignateRouter() const
+UInt32 OSPFv2HelloPacket::getBackupDesignateRouter() const
 {
 	return backupDesignatedRouter;
 }
-Ospfv2HelloPacket* Ospfv2HelloPacket::CreatePacket(unsigned int nNeighbors)
+std::vector<UInt32> OSPFv2HelloPacket::getNeighbors() const
 {
-	if(nNeighbors>0)
-	{
-		return (Ospfv2HelloPacket*)malloc(sizeof(Ospfv2HelloPacket)+nNeighbors*sizeof(uint32_t));
-	}
-	else
-	{
-		return (Ospfv2HelloPacket*)malloc(sizeof(Ospfv2HelloPacket));
-	}
+	return neighbors;
+}
+UInt32 OSPFv2HelloPacket::getNNeighbors() const
+{
+	return neighbors.size();
+}
+void OSPFv2HelloPacket::addNeighbor(UInt32 neighborID)
+{
+	neighbors.push_back(neighborID);
 }
 
+void OSPFv2HelloPacket::serialize(UInt8* series) const
+{
+	MetaData* metaData = reinterpret_cast<MetaData*>(series);
+	metaData->networkMask=networkMask.get();
+	metaData->helloInterval=helloInterval;
+	metaData->options=options;
+	metaData->routerPriority=routerPriority;
+	metaData->routerDeadInterval=routerDeadInterval;
+	metaData->designatedRouter=designatedRouter;
+	metaData->backupDesignatedRouter=backupDesignatedRouter;
+
+	UInt32* neighborID=reinterpret_cast<UInt32*>(metaData+1);
+	for (std::vector<UInt32>::const_iterator i=neighbors.begin();
+		i!=neighbors.end();
+		i++)
+	{
+		*neighborID=*i;
+		neighborID++;
+	}
+}
+void OSPFv2HelloPacket::deserialize(const UInt8* series, UInt32 seriesSize)
+{
+	const UInt32 nNeighbors=(seriesSize-sizeof(MetaData))/sizeof(UInt32);
+	assert(nNeighbors>=0,"Series' size is wrong.");
+	const MetaData* metaData = reinterpret_cast<const MetaData*>(series);
+	networkMask.set(metaData->networkMask);
+	helloInterval=metaData->helloInterval;
+	options=metaData->options;
+	routerPriority=metaData->routerPriority;
+	routerDeadInterval=metaData->routerDeadInterval;
+	designatedRouter=metaData->designatedRouter;
+	backupDesignatedRouter=metaData->backupDesignatedRouter;
+
+	const UInt32* neighborID=reinterpret_cast<const UInt32*>(metaData+1);
+	for (int i=0;i<nNeighbors;i++)
+	{
+		neighbors.push_back(*neighborID);
+	}
+}
+UInt32 OSPFv2HelloPacket::getSerializedSize() const
+{
+	return sizeof(MetaData)+sizeof(UInt32)*getNNeighbors();
+}
 /************************************************************************/
 /* DD报文                                                                     */
 /************************************************************************/
-Ospfv2DDPacket::Ospfv2DDPacket()
+OSPFv2DDPacket::OSPFv2DDPacket()
 	: interfaceMTU(0)
 	, options(0x00)
 	, DDOptions(0x00)
@@ -191,52 +279,193 @@ Ospfv2DDPacket::Ospfv2DDPacket()
 {
 
 }
-Ospfv2DDPacket::~Ospfv2DDPacket()
-{
-
-}
-
-uint16_t Ospfv2DDPacket::getInterfaceMTU() const
+UInt16 OSPFv2DDPacket::getInterfaceMTU() const
 {
 	return interfaceMTU;
 }
-void Ospfv2DDPacket::setInterfaceMTU(const uint16_t interfaceMTU)
+void OSPFv2DDPacket::setInterfaceMTU(UInt16 interfaceMTU)
 {
 	this->interfaceMTU=interfaceMTU;
 }
-bool Ospfv2DDPacket::getOptions(Ospfv2OptionsField option) const//输入位名返回是否置位
+bool OSPFv2DDPacket::getOptions(OSPFv2OptionsField option) const//输入位名返回是否置位
 {
 	return option==(options&option);
 }
-void Ospfv2DDPacket::setOptions(Ospfv2OptionsField options)//可以用按位或连接多个Options位
+void OSPFv2DDPacket::setOptions(OSPFv2OptionsField options)//可以用按位或连接多个Options位
 {
 	this->options|=options;
 }
-bool Ospfv2DDPacket::getDDOptions(Ospfv2DDOptionsField DDOption) const//输入位名返回是否置位
+bool OSPFv2DDPacket::getDDOptions(OSPFv2DDOptionsField DDOption) const//输入位名返回是否置位
 {
 	return DDOption==(DDOptions&DDOption);
 }
-void Ospfv2DDPacket::setDDOptions(Ospfv2DDOptionsField DDOptions)//可以用按位或连接多个Options位
+void OSPFv2DDPacket::setDDOptions(OSPFv2DDOptionsField DDOptions)//可以用按位或连接多个Options位
 {
 	this->DDOptions=DDOptions;
 }
-uint32_t Ospfv2DDPacket::getDDSequenceNumber() const
+UInt32 OSPFv2DDPacket::getDDSequenceNumber() const
 {
 	return DDSequenceNumber;
 }
-void Ospfv2DDPacket::setDDSequenceNumber(const uint32_t DDSequenceNumber)
+void OSPFv2DDPacket::setDDSequenceNumber(UInt32 DDSequenceNumber)
 {
 	this->DDSequenceNumber=DDSequenceNumber;
 }
 
-static Ospfv2DDPacket* CreatePacket(unsigned int nLSAs)
+std::vector<OSPFv2LSAHeader> OSPFv2DDPacket::getLSAHeaders() const
 {
-	if(nLSAs>0)
+	return LSAHeaders;
+}
+UInt32 OSPFv2DDPacket::getNLSAHeaders() const
+{
+	return LSAHeaders.size();
+}
+void OSPFv2DDPacket::addLSAHeader(const OSPFv2LSAHeader& LSAHeader)
+{
+	LSAHeaders.push_back(LSAHeader);
+}
+
+void OSPFv2DDPacket::serialize(UInt8* series) const
+{
+	MetaData* metaData = reinterpret_cast<MetaData*>(series);
+	metaData->interfaceMTU=interfaceMTU;
+	metaData->options=options;
+	metaData->DDOptions=DDOptions;
+	metaData->DDSequenceNumber=DDSequenceNumber;
+
+	OSPFv2LSAHeader* LSAHeader=reinterpret_cast<OSPFv2LSAHeader*>(metaData+1);
+	for (std::vector<OSPFv2LSAHeader>::const_iterator i=LSAHeaders.begin();
+		i!=LSAHeaders.end();
+		i++)
 	{
-		return (Ospfv2DDPacket*)malloc(sizeof(Ospfv2DDPacket)+nLSAs*sizeof(uint32_t));
+		*LSAHeader=*i;
+		LSAHeader++;
 	}
-	else
+}
+void OSPFv2DDPacket::deserialize(const UInt8* series, UInt32 seriesSize)
+{
+	const UInt32 nLSAHeaders=(seriesSize-sizeof(MetaData))/sizeof(OSPFv2LSAHeader);
+	assert(nLSAHeaders>=0,"Series' size is wrong.");
+	const MetaData* metaData = reinterpret_cast<const MetaData*>(series);
+	interfaceMTU=metaData->interfaceMTU;
+	options=metaData->options;
+	DDOptions=metaData->DDOptions;
+	DDSequenceNumber=metaData->DDSequenceNumber;
+
+	const OSPFv2LSAHeader* LSAHeader=reinterpret_cast<const OSPFv2LSAHeader*>(metaData+1);
+	for (int i=0;i<nLSAHeaders;i++)
 	{
-		return (Ospfv2DDPacket*)malloc(sizeof(Ospfv2DDPacket));
+		LSAHeaders.push_back(*LSAHeader);
 	}
+}
+UInt32 OSPFv2DDPacket::getSerializedSize() const
+{
+	return sizeof(MetaData)+sizeof(OSPFv2LSAHeader)*getNLSAHeaders();
+}
+
+/************************************************************************/
+/* LSR报文                                                                     */
+/************************************************************************/
+//LSR Info
+OSPFv2LSRequest::OSPFv2LSRequest()
+	: LSType(0)
+	, linkStateID(0xffffffff)
+	, advertisingRouter(0xffffffff)
+{
+
+}
+UInt32 OSPFv2LSRequest::getLSType()const
+{
+	return LSType;
+}
+void OSPFv2LSRequest::setLSType(UInt32 LSType)
+{
+	this->LSType=LSType;
+}
+UInt32 OSPFv2LSRequest::getLinkStateID()const
+{
+	return linkStateID;
+}
+void OSPFv2LSRequest::setLinkStateID(UInt32 linkStateID)
+{
+	this->linkStateID=linkStateID;
+}
+UInt32 OSPFv2LSRequest::getAdvertisingRouter()const
+{
+	return advertisingRouter;
+}
+void OSPFv2LSRequest::setAdvertisingRouter(UInt32 advertisingRouter)
+{
+	this->advertisingRouter=advertisingRouter;
+}
+//LSR Packet
+OSPFv2LSRPacket::OSPFv2LSRPacket()
+{
+
+}
+
+std::vector<OSPFv2LSRequest> OSPFv2LSRPacket::getLSRequests() const
+{
+	return LSRequests;
+}
+UInt32 OSPFv2LSRPacket::getNLSRequests() const
+{
+	return LSRequests.size();
+}
+void OSPFv2LSRPacket::addLSRequest(const OSPFv2LSRequest& LSRequest)
+{
+	LSRequests.push_back(LSRequest);
+}
+
+void OSPFv2LSRPacket::serialize(UInt8* series) const
+{
+	OSPFv2LSRequest* LSRequest=reinterpret_cast<OSPFv2LSRequest*>(series);
+	for (std::vector<OSPFv2LSRequest>::const_iterator i=LSRequests.begin();
+		i!=LSRequests.end();
+		i++)
+	{
+		*LSRequest=*i;
+		LSRequest++;
+	}
+}
+void OSPFv2LSRPacket::deserialize(const UInt8* series, UInt32 seriesSize)
+{
+	const UInt32 nLSRequests=seriesSize/sizeof(OSPFv2LSRequest);
+	assert(nLSRequests>=0,"Series' size is wrong.");
+	
+	const OSPFv2LSRequest* LSRequest=reinterpret_cast<const OSPFv2LSRequest*>(series+1);
+	for (int i=0;i<nLSRequests;i++)
+	{
+		LSRequests.push_back(*LSRequest);
+	}
+}
+UInt32 OSPFv2LSRPacket::getSerializedSize() const
+{
+	return sizeof(OSPFv2LSRequest)*getNLSRequests();
+}
+
+/************************************************************************/
+/* LSU报文                                                                     */
+/************************************************************************/
+OSPFv2LSUPacket::OSPFv2LSUPacket()
+	:nLSAs(0)
+{
+
+}
+
+UInt32 OSPFv2LSUPacket::getNLSAs() const
+{
+	return nLSAs;
+}
+void OSPFv2LSUPacket::setNLSAs(UInt32 nLSAs)
+{
+	this->nLSAs=nLSAs;
+}
+
+/************************************************************************/
+/* LSA报文                                                                     */
+/************************************************************************/
+OSPFv2LSAPacket::OSPFv2LSAPacket()
+{
+
 }

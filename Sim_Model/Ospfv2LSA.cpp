@@ -1,11 +1,11 @@
-#include "Ospfv2LSA.h"
+#include "OSPFv2LSA.h"
 
 
-Ospfv2LSAHeader::Ospfv2LSAHeader()
+OSPFv2LSAHeader::OSPFv2LSAHeader()
 	: LSAge(0xffff)
 	, options(0x00)
 	, LSType(0)
-	, linkStateId(0xffffffff)
+	, linkStateID(0xffffffff)
 	, advertisingRouter(0xffffffff)
 	, LSSequenceNumber(0)
 	, LSCheckSum(0)
@@ -13,13 +13,13 @@ Ospfv2LSAHeader::Ospfv2LSAHeader()
 {
 
 }
-Ospfv2LSAHeader::Ospfv2LSAHeader(const uint16_t LSAge, Ospfv2OptionsField options, Ospfv2LSType LSType,
-	uint32_t linkStateId, uint32_t advertisingRouter,uint32_t LSSequenceNumber,
-	uint16_t length)
+OSPFv2LSAHeader::OSPFv2LSAHeader(UInt16 LSAge, OSPFv2OptionsField options, OSPFv2LSType LSType,
+	UInt32 linkStateID, UInt32 advertisingRouter,UInt32 LSSequenceNumber,
+	UInt16 length)
 	: LSAge(LSAge)
 	, options(options)
-	, LSType(static_cast<uint16_t>(LSType))
-	, linkStateId(linkStateId)
+	, LSType(static_cast<UInt8>(LSType))
+	, linkStateID(linkStateID)
 	, advertisingRouter(advertisingRouter)
 	, LSSequenceNumber(LSSequenceNumber)
 	, LSCheckSum(0)
@@ -27,82 +27,95 @@ Ospfv2LSAHeader::Ospfv2LSAHeader(const uint16_t LSAge, Ospfv2OptionsField option
 {
 
 }
-Ospfv2LSAHeader::~Ospfv2LSAHeader()
+OSPFv2LSAHeader::~OSPFv2LSAHeader()
 {
 
 }
 
-Ospfv2LSType Ospfv2LSAHeader::getLSAge() const
+UInt16 OSPFv2LSAHeader::getLSAge() const
 {
 	return LSAge;
 }
-void Ospfv2LSAHeader::setLSAge(Ospfv2LSType LSAge)
+void OSPFv2LSAHeader::setLSAge(UInt16 LSAge)
 {
 	this->LSAge=LSAge;
 }
-bool Ospfv2LSAHeader::getOptions(Ospfv2OptionsField option) const
+bool OSPFv2LSAHeader::getOptions(OSPFv2OptionsField option) const
 {
 	return option==(options&option);
 }
-void Ospfv2LSAHeader::setOptions(Ospfv2OptionsField options)
+void OSPFv2LSAHeader::setOptions(OSPFv2OptionsField options)
 {
 	this->options|=options;
 }
-uint8_t Ospfv2LSAHeader::getLSType() const
+OSPFv2LSType OSPFv2LSAHeader::getLSType() const
 {
-	return static_cast<Ospfv2LSType>(LSType);
+	return static_cast<OSPFv2LSType>(LSType);
 }
-void Ospfv2LSAHeader::setLSType(const uint8_t LSType)
+void OSPFv2LSAHeader::setLSType(OSPFv2LSType LSType)
 {
-	this->LSAge=static_cast<uint16_t>(LSType);
+	this->LSType=static_cast<UInt8>(LSType);
 }
-uint32_t Ospfv2LSAHeader::getLinkStateId() const
+UInt32 OSPFv2LSAHeader::getLinkStateID() const
 {
-	return linkStateId;
+	return linkStateID;
 }
-void Ospfv2LSAHeader::setLinkStateId(const uint32_t linkStateId)
+void OSPFv2LSAHeader::setLinkStateID(UInt32 linkStateID)
 {
-	this->linkStateId=linkStateId;
+	this->linkStateID=linkStateID;
 }
-uint32_t Ospfv2LSAHeader::getAdvertisingRouter() const
+UInt32 OSPFv2LSAHeader::getAdvertisingRouter() const
 {
 	return advertisingRouter;
 }
-void Ospfv2LSAHeader::setAdvertisingRouter(const uint32_t advertisingRouter)
+void OSPFv2LSAHeader::setAdvertisingRouter(UInt32 advertisingRouter)
 {
 	this->advertisingRouter=advertisingRouter;
 }
-uint32_t Ospfv2LSAHeader::getLSSequenceNumber() const
+UInt32 OSPFv2LSAHeader::getLSSequenceNumber() const
 {
 	return LSSequenceNumber;
 }
-void Ospfv2LSAHeader::setLSSequenceNumber(const uint32_t LSSequenceNumber)
+void OSPFv2LSAHeader::setLSSequenceNumber(UInt32 LSSequenceNumber)
 {
 	this->LSSequenceNumber=LSSequenceNumber;
 }
-uint16_t Ospfv2LSAHeader::getLSCheckSum() const
+UInt16 OSPFv2LSAHeader::getLSCheckSum() const
 {
 	return LSCheckSum;
 }
-uint16_t Ospfv2LSAHeader::getLength() const
+UInt16 OSPFv2LSAHeader::getLength() const
 {
 	return length;
 }
-void Ospfv2LSAHeader::setLength(const uint16_t length)
+void OSPFv2LSAHeader::setLength(UInt16 length)
 {
 	this->length=length;
 }
 
-void Ospfv2LSAHeader::setHeader(const uint16_t LSAge, Ospfv2OptionsField options, Ospfv2LSType LSType,
-	uint32_t linkStateId, uint32_t advertisingRouter,uint32_t LSSequenceNumber,
-	uint16_t length)
+void OSPFv2LSAHeader::setHeader(UInt16 LSAge, OSPFv2OptionsField options, OSPFv2LSType LSType,
+	UInt32 linkStateID, UInt32 advertisingRouter,UInt32 LSSequenceNumber,
+	UInt16 length)
 {
-	this->LSAge=LSAge;
-	this->options|=options;
-	this->LSType=LSType;
-	this->linkStateId=linkStateId;
-	this->advertisingRouter=advertisingRouter;
-	this->LSSequenceNumber=LSSequenceNumber;
-	this->LSCheckSum=0;
-	this->length=length;
+	setLSAge(LSAge);
+	setOptions(static_cast<OSPFv2OptionsField>(options));
+	setLSType(static_cast<OSPFv2LSType>(LSType));
+	setLinkStateID(linkStateID);
+	setAdvertisingRouter(advertisingRouter);
+	setLSSequenceNumber(LSSequenceNumber);
+	setLength(length);
 }
+void OSPFv2LSAHeader::setHeader(const OSPFv2LSAHeader& header)
+{
+	setLSAge(header.LSAge);
+	setOptions(static_cast<OSPFv2OptionsField>(header.options));
+	setLSType(static_cast<OSPFv2LSType>(header.LSType));
+	setLinkStateID(header.linkStateID);
+	setAdvertisingRouter(header.advertisingRouter);
+	setLSSequenceNumber(header.LSSequenceNumber);
+	setLength(header.length);
+}
+
+/************************************************************************/
+/* Router LSA                                                                     */
+/************************************************************************/
