@@ -62,7 +62,7 @@ void OSPFv2CommonHeader::setPacketLength(UInt16 packetLength)
 
 UInt32 OSPFv2CommonHeader::getRouterID() const
 {
-	return routerID
+	return routerID;
 }
 
 void OSPFv2CommonHeader::setRouterID(UInt32 routerID)
@@ -150,7 +150,8 @@ std::ostream& operator<< (std::ostream& os, const OSPFv2CommonHeader& header)
 		<<" Area ID: "<<header.getAreaID()
 		<<" Check Sum: "<<header.getCheckSum()
 		<<" Au Type: "<<header.getAuType()
-		<<" Authentication: "<<header.getAuthentication();
+		<<" Authentication: "<<header.getAuthentication()
+		<<"\n";
 	return os;
 }
 /************************************************************************/
@@ -184,9 +185,9 @@ void OSPFv2HelloPacket::setHelloInterval(UInt16 helloInterval)
 {
 	this->helloInterval=helloInterval;
 }
-bool OSPFv2HelloPacket::getOptions(OSPFv2OptionsField option) const
+OSPFv2OptionsField OSPFv2HelloPacket::getOptions(OSPFv2OptionsField option) const
 {
-	return option==(options&option);
+	return static_cast<OSPFv2OptionsField>(options&option);
 }
 void OSPFv2HelloPacket::setOptions(OSPFv2OptionsField options)
 {
@@ -262,11 +263,29 @@ void OSPFv2HelloPacket::deserialize(const UInt8* series, UInt32 seriesSize)
 	for (int i=0;i<nNeighbors;i++)
 	{
 		neighbors.push_back(*neighborID);
+		neighborID++;
 	}
 }
 UInt32 OSPFv2HelloPacket::getSerializedSize() const
 {
 	return sizeof(MetaData)+sizeof(UInt32)*getNNeighbors();
+}
+std::ostream& operator<< (std::ostream& os, const OSPFv2HelloPacket& packet)
+{
+	os<<"Hello interval: "<<packet.getHelloInterval()
+		<<" Options: "<<packet.getOptions(OSPFv2OptionsField::ALL_bits)
+		<<" Router priority: "<<packet.getRouterPriority()
+		<<" Router dead interval: "<<packet.getRouterDeadInterval()
+		<<" Designated router: "<<packet.getDesignateRouter()
+		<<" Backup designated router: "<<packet.getBackupDesignateRouter()
+		<<"\n";
+	for (std::vector<UInt32>::const_iterator i=packet.getNeighbors().begin();
+		i!=packet.getNeighbors().end();
+		i++)
+	{
+		os<<*i<<"\n";
+	}
+	return os;
 }
 /************************************************************************/
 /* DD报文                                                                     */
@@ -287,19 +306,19 @@ void OSPFv2DDPacket::setInterfaceMTU(UInt16 interfaceMTU)
 {
 	this->interfaceMTU=interfaceMTU;
 }
-bool OSPFv2DDPacket::getOptions(OSPFv2OptionsField option) const//输入位名返回是否置位
+OSPFv2OptionsField OSPFv2DDPacket::getOptions(OSPFv2OptionsField option) const//输入位名返回是否置位
 {
-	return option==(options&option);
+	return static_cast<OSPFv2OptionsField>(options&option);
 }
 void OSPFv2DDPacket::setOptions(OSPFv2OptionsField options)//可以用按位或连接多个Options位
 {
 	this->options|=options;
 }
-bool OSPFv2DDPacket::getDDOptions(OSPFv2DDOptionsField DDOption) const//输入位名返回是否置位
+OSPFv2DDPacket::OSPFv2DDOptionsField OSPFv2DDPacket::getDDOptions(OSPFv2DDPacket::OSPFv2DDOptionsField DDOption) const//输入位名返回是否置位
 {
-	return DDOption==(DDOptions&DDOption);
+	return static_cast<OSPFv2DDOptionsField>(DDOptions&DDOption);
 }
-void OSPFv2DDPacket::setDDOptions(OSPFv2DDOptionsField DDOptions)//可以用按位或连接多个Options位
+void OSPFv2DDPacket::setDDOptions(OSPFv2DDPacket::OSPFv2DDOptionsField DDOptions)//可以用按位或连接多个Options位
 {
 	this->DDOptions=DDOptions;
 }
@@ -333,18 +352,25 @@ void OSPFv2DDPacket::serialize(UInt8* series) const
 	metaData->DDOptions=DDOptions;
 	metaData->DDSequenceNumber=DDSequenceNumber;
 
-	OSPFv2LSAHeader* LSAHeader=reinterpret_cast<OSPFv2LSAHeader*>(metaData+1);
+	OSPFv2LSAHeader::MetaData* LSAHeader=reinterpret_cast<OSPFv2LSAHeader::MetaData*>(metaData+1);
 	for (std::vector<OSPFv2LSAHeader>::const_iterator i=LSAHeaders.begin();
 		i!=LSAHeaders.end();
 		i++)
 	{
-		*LSAHeader=*i;
+		LSAHeader->LSAge=i->getLSAge();
+		LSAHeader->options=static_cast<UInt8>(i->getOptions(OSPFv2OptionsField::ALL_bits));
+		LSAHeader->LSType=i->getLSType();
+		LSAHeader->linkStateID=i->getLinkStateID();
+		LSAHeader->advertisingRouter=i->getAdvertisingRouter();
+		LSAHeader->LSSequenceNumber=i->getLSSequenceNumber();
+		LSAHeader->LSCheckSum=i->getLSCheckSum();
+		LSAHeader->length=i->getLength();
 		LSAHeader++;
 	}
 }
 void OSPFv2DDPacket::deserialize(const UInt8* series, UInt32 seriesSize)
 {
-	const UInt32 nLSAHeaders=(seriesSize-sizeof(MetaData))/sizeof(OSPFv2LSAHeader);
+	const UInt32 nLSAHeaders=(seriesSize-sizeof(MetaData))/sizeof(OSPFv2LSAHeader::MetaData);
 	assert(nLSAHeaders>=0,"Series' size is wrong.");
 	const MetaData* metaData = reinterpret_cast<const MetaData*>(series);
 	interfaceMTU=metaData->interfaceMTU;
@@ -352,15 +378,32 @@ void OSPFv2DDPacket::deserialize(const UInt8* series, UInt32 seriesSize)
 	DDOptions=metaData->DDOptions;
 	DDSequenceNumber=metaData->DDSequenceNumber;
 
-	const OSPFv2LSAHeader* LSAHeader=reinterpret_cast<const OSPFv2LSAHeader*>(metaData+1);
+	const OSPFv2LSAHeader::MetaData* LSAHeader=reinterpret_cast<const OSPFv2LSAHeader::MetaData*>(metaData+1);
 	for (int i=0;i<nLSAHeaders;i++)
 	{
-		LSAHeaders.push_back(*LSAHeader);
+		LSAHeaders.push_back(OSPFv2LSAHeader(*LSAHeader));
+		LSAHeader++;
 	}
 }
 UInt32 OSPFv2DDPacket::getSerializedSize() const
 {
-	return sizeof(MetaData)+sizeof(OSPFv2LSAHeader)*getNLSAHeaders();
+	return sizeof(MetaData)+sizeof(OSPFv2LSAHeader::MetaData)*getNLSAHeaders();
+}
+
+std::ostream& operator<< (std::ostream& os, const OSPFv2DDPacket& packet)
+{
+	os<<"Interface MTU: "<<packet.getInterfaceMTU()
+		<<" Options: "<<packet.getOptions(OSPFv2OptionsField::ALL_bits)
+		<<" DD options: "<<packet.getDDOptions(OSPFv2DDPacket::OSPFv2DDOptionsField::ALL_bits)
+		<<" DD sequence number: "<<packet.getDDSequenceNumber()
+		<<"\n";
+	for (std::vector<OSPFv2LSAHeader>::const_iterator i=packet.getLSAHeaders().begin();
+		i!=packet.getLSAHeaders().end();
+		i++)
+	{
+		os<<*i;
+	}
+	return os;
 }
 
 /************************************************************************/
@@ -374,13 +417,27 @@ OSPFv2LSRequest::OSPFv2LSRequest()
 {
 
 }
-UInt32 OSPFv2LSRequest::getLSType()const
+OSPFv2LSRequest::OSPFv2LSRequest(OSPFv2LSType LSType,UInt32 linkStateID,UInt32 advertisingRouter)
+	: LSType(static_cast<UInt32>(LSType))
+	, linkStateID(linkStateID)
+	, advertisingRouter(advertisingRouter)
 {
-	return LSType;
+
 }
-void OSPFv2LSRequest::setLSType(UInt32 LSType)
+OSPFv2LSRequest::OSPFv2LSRequest(const MetaData& metaData)
+	: LSType(metaData.LSType)
+	, linkStateID(metaData.linkStateID)
+	, advertisingRouter(metaData.advertisingRouter)
 {
-	this->LSType=LSType;
+
+}
+OSPFv2LSType OSPFv2LSRequest::getLSType()const
+{
+	return static_cast<OSPFv2LSType>(LSType);
+}
+void OSPFv2LSRequest::setLSType(OSPFv2LSType LSType)
+{
+	this->LSType=static_cast<UInt32>(LSType);
 }
 UInt32 OSPFv2LSRequest::getLinkStateID()const
 {
@@ -397,6 +454,26 @@ UInt32 OSPFv2LSRequest::getAdvertisingRouter()const
 void OSPFv2LSRequest::setAdvertisingRouter(UInt32 advertisingRouter)
 {
 	this->advertisingRouter=advertisingRouter;
+}
+void OSPFv2LSRequest::getMetaData(MetaData& metaData) const
+{
+	metaData.LSType=LSType;
+	metaData.linkStateID=linkStateID;
+	metaData.advertisingRouter=advertisingRouter;
+}
+void OSPFv2LSRequest::set(const MetaData& metaData)
+{
+	LSType=metaData.LSType;
+	linkStateID=metaData.linkStateID;
+	advertisingRouter=metaData.advertisingRouter;
+}
+std::ostream& operator<< (std::ostream& os, const OSPFv2LSRequest& request)
+{
+	os<<"Link-State type: "<<request.getLSType()
+		<<" Link-State ID: "<<request.getLinkStateID()
+		<<" Advertising router: "<<request.getAdvertisingRouter()
+		<<"\n";
+	return os;
 }
 //LSR Packet
 OSPFv2LSRPacket::OSPFv2LSRPacket()
@@ -419,47 +496,40 @@ void OSPFv2LSRPacket::addLSRequest(const OSPFv2LSRequest& LSRequest)
 
 void OSPFv2LSRPacket::serialize(UInt8* series) const
 {
-	OSPFv2LSRequest* LSRequest=reinterpret_cast<OSPFv2LSRequest*>(series);
+	OSPFv2LSRequest::MetaData* LSRequest=reinterpret_cast<OSPFv2LSRequest::MetaData*>(series);
 	for (std::vector<OSPFv2LSRequest>::const_iterator i=LSRequests.begin();
 		i!=LSRequests.end();
 		i++)
 	{
-		*LSRequest=*i;
+		i->getMetaData(*LSRequest);
 		LSRequest++;
 	}
 }
 void OSPFv2LSRPacket::deserialize(const UInt8* series, UInt32 seriesSize)
 {
-	const UInt32 nLSRequests=seriesSize/sizeof(OSPFv2LSRequest);
+	const UInt32 nLSRequests=seriesSize/sizeof(OSPFv2LSRequest::MetaData);
 	assert(nLSRequests>=0,"Series' size is wrong.");
 	
-	const OSPFv2LSRequest* LSRequest=reinterpret_cast<const OSPFv2LSRequest*>(series+1);
+	const OSPFv2LSRequest::MetaData* LSRequest=reinterpret_cast<const OSPFv2LSRequest::MetaData*>(series+1);
 	for (int i=0;i<nLSRequests;i++)
 	{
-		LSRequests.push_back(*LSRequest);
+		LSRequests.push_back(OSPFv2LSRequest(*LSRequest));
+		LSRequest++;
 	}
 }
 UInt32 OSPFv2LSRPacket::getSerializedSize() const
 {
-	return sizeof(OSPFv2LSRequest)*getNLSRequests();
+	return sizeof(OSPFv2LSRequest::MetaData)*getNLSRequests();
 }
-
-/************************************************************************/
-/* LSU报文                                                                     */
-/************************************************************************/
-OSPFv2LSUPacket::OSPFv2LSUPacket()
-	:nLSAs(0)
+std::ostream& operator<< (std::ostream& os, const OSPFv2LSRPacket& packet)
 {
-
-}
-
-UInt32 OSPFv2LSUPacket::getNLSAs() const
-{
-	return nLSAs;
-}
-void OSPFv2LSUPacket::setNLSAs(UInt32 nLSAs)
-{
-	this->nLSAs=nLSAs;
+	for (std::vector<OSPFv2LSRequest>::const_iterator i=packet.getLSRequests().begin();
+		i!=packet.getLSRequests().end();
+		i++)
+	{
+		os<<*i;
+	}
+	return os;
 }
 
 /************************************************************************/
@@ -468,4 +538,65 @@ void OSPFv2LSUPacket::setNLSAs(UInt32 nLSAs)
 OSPFv2LSAPacket::OSPFv2LSAPacket()
 {
 
+}
+
+std::vector<OSPFv2LSAHeader> OSPFv2LSAPacket::getLSAHeaders() const
+{
+	return LSAHeaders;
+}
+UInt32 OSPFv2LSAPacket::getNLSAHeaders() const
+{
+	return LSAHeaders.size();
+}
+void OSPFv2LSAPacket::addLSAHeader(const OSPFv2LSAHeader& LSAHeader)
+{
+	LSAHeaders.push_back(LSAHeader);
+}
+
+void OSPFv2LSAPacket::serialize(UInt8* series) const
+{
+	OSPFv2LSAHeader::MetaData* LSAHeader=reinterpret_cast<OSPFv2LSAHeader::MetaData*>(series);
+	for (std::vector<OSPFv2LSAHeader>::const_iterator i=LSAHeaders.begin();
+		i!=LSAHeaders.end();
+		i++)
+	{
+		LSAHeader->LSAge=i->getLSAge();
+		LSAHeader->options=static_cast<UInt8>(i->getOptions(OSPFv2OptionsField::ALL_bits));
+		LSAHeader->LSType=i->getLSType();
+		LSAHeader->linkStateID=i->getLinkStateID();
+		LSAHeader->advertisingRouter=i->getAdvertisingRouter();
+		LSAHeader->LSSequenceNumber=i->getLSSequenceNumber();
+		LSAHeader->LSCheckSum=i->getLSCheckSum();
+		LSAHeader->length=i->getLength();
+		LSAHeader++;
+	}
+}
+void OSPFv2LSAPacket::deserialize(const UInt8* series, UInt32 seriesSize)
+{
+	const UInt32 nLSAHeaders=seriesSize/sizeof(OSPFv2LSAHeader::MetaData);
+	assert(nLSAHeaders>=0,"Series' size is wrong.");
+
+	const OSPFv2LSAHeader::MetaData* LSAHeader=reinterpret_cast<const OSPFv2LSAHeader::MetaData*>(series);
+	for (int i=0;i<nLSAHeaders;i++)
+	{
+		LSAHeaders.push_back(OSPFv2LSAHeader(*LSAHeader));
+		LSAHeader++;
+	}
+}
+UInt32 OSPFv2LSAPacket::getSerializedSize() const
+{
+	return sizeof(OSPFv2LSAHeader::MetaData)*getNLSAHeaders();
+}
+
+std::ostream& operator<< (std::ostream& os, const OSPFv2LSAPacket& packet)
+{
+	os<<"nLSAHeaders: "<<packet.getNLSAHeaders()
+		<<"\n";
+	for (std::vector<OSPFv2LSAHeader>::const_iterator i=packet.getLSAHeaders().begin();
+		i!=packet.getLSAHeaders().end();
+		i++)
+	{
+		os<<*i;
+	}
+	return os;
 }

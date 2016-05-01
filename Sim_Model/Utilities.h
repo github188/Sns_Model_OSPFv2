@@ -1,10 +1,11 @@
 #pragma once
+#include "StdAfx.h"
 #include <assert.h>
-#include <iostream>
-#include <cstring>
 #include "types.h"
 
-//Ipv4Address
+/************************************************************************/
+/* IPv4Address                                                                     */
+/************************************************************************/
 class IPv4Address;
 typedef IPv4Address IPv4Mask;
 
@@ -51,32 +52,29 @@ public:
 	{
 		return IPv4Address(0xffffffff);
 	}
-	static IPv4Address GetBroadcast(const IPv4Address& address, const IPv4Address& mask)
-	{
-		return (address&mask)|(~mask);
-	}
+	static IPv4Address GetBroadcast(const IPv4Address& address, const IPv4Mask& mask);
 private:
 	UInt32 m_address;
 };
 
-inline IPv4Address operator& (const IPv4Address& address, const IPv4Mask mask)
+inline IPv4Address operator& (const IPv4Address& address, const IPv4Mask& mask)
 {
 	return IPv4Address(address.get()&mask.get());
 }
-inline IPv4Address operator| (const IPv4Address& address1, const IPv4Mask address2)
+inline IPv4Address operator| (const IPv4Address& address1, const IPv4Mask& address2)
 {
 	return IPv4Address(address1.get()|address2.get());
 }
 inline IPv4Address operator~ (const IPv4Address& address)
 {
-	return IPv4Address(~address);
+	return IPv4Address(~address.get());
 }
 
-inline bool operator== (const IPv4Address& address1, const IPv4Mask address2)
+inline bool operator== (const IPv4Address& address1, const IPv4Mask& address2)
 {
 	return address1.get()==address2.get();
 }
-inline bool operator!= (const IPv4Address& address1, const IPv4Mask address2)
+inline bool operator!= (const IPv4Address& address1, const IPv4Mask& address2)
 {
 	return address1.get()!=address2.get();
 }
@@ -91,4 +89,9 @@ inline std::istream& operator>>(std::istream& is, IPv4Address address)
 	is>>str;
 	address.set(str);
 	return is;
+}
+
+inline IPv4Address IPv4Address::GetBroadcast(const IPv4Address& address, const IPv4Mask& mask)
+{
+	return (address&mask)|(~mask);
 }
